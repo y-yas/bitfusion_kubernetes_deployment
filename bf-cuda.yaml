@@ -18,8 +18,8 @@ spec:
       - name: bf-cuda
         image: nvcr.io/nvidia/tensorflow:22.08-tf2-py3
         command: ["/bin/sh", "-c", "while : ;do curl http://localhost:80/; sleep 3; done"]
-        ports:
-        - containerPort: 8888
+        ports: ## for Jupyter
+        - containerPort: 8888  ## for Jupyter
         volumeMounts:
         - name: config-files
           mountPath: /etc/bitfusion
@@ -39,7 +39,7 @@ spec:
           secretName: bitfusion-client-secret-ca.crt
           defaultMode: 0640
 
----
+--- ## for jupyter
 apiVersion: v1
 kind: Service
 metadata:

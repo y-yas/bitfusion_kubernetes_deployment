@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bf-cuda-deployment
+spec:
+  selector:
+    matchLabels:
+      app: bf-cuda
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bf-cuda
+    spec:
+      hostNetwork: true
+      containers:
+      - name: bf-cuda
+        image: nvcr.io/nvidia/tensorflow:22.08-tf2-py3
+        command: ["/bin/sh", "-c", "while : ;do curl http://localhost:80/; sleep 3; done"]
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - name: config-files
+          mountPath: /etc/bitfusion
+        - name: certificate  
+          mountPath: /etc/bitfusion/tls  
+      volumes:
+      - name: config-files
+        projected:
+          defaultMode: 0640
+          sources:
+          - secret:
+              name: bitfusion-client-secret-client.yml
+          - secret:
+              name: bitfusion-client-secret-servers.conf
+      - name: certificate
+        secret:
+          secretName: bitfusion-client-secret-ca.crt
+          defaultMode: 0640
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bf-cuda
+spec:
+  ports:
+  - name: bf-cuda
+    port: 8888
+  selector:
+    app: bf-cuda
+  type: LoadBalancer
